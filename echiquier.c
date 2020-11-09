@@ -30,6 +30,7 @@ int player_Count = 2;
 int animal_Count = 16;
 char coord[9][7];
 FILE *fichier;
+bool win = false;
 
 struct Player{
 
@@ -52,6 +53,17 @@ enum Type {
 
 };
 
+enum Zone {
+
+    PIEGE_BLEU,
+    PIEGE_ROUGE,
+    SANCTUAIRE_BLEU,
+    SANCTUAIRE_ROUGE,
+    LAC,
+    AUCUNE
+
+};
+
 struct Animal{
 
     char type;
@@ -61,6 +73,7 @@ struct Animal{
     bool isAlive;
     bool canEat;
     int index;
+    enum Zone zone;
 
 };
 
@@ -73,13 +86,13 @@ bool readSave(){
     }
     int m;
     playerTab = malloc(2 * sizeof(Player));//nos types d'animaux
-    fscanf(fichier, "%s", playerTab[0].nom);
+    fscanf(fichier, "Joueur 1: %s", playerTab[0].nom);
     fseek(fichier, 1, SEEK_CUR);
-    fscanf(fichier, "%s", playerTab[1].nom);
+    fscanf(fichier, "Joueur 2: %s", playerTab[1].nom);
     fseek(fichier, 1, SEEK_CUR);
     for (m = 0; m < animal_Count; m++) {
         //on récupère les infos des animaux
-        fscanf(fichier, "%c: %i, %i, %d, %d, %i", &animalTab[m].type, &animalTab[m].x, &animalTab[m].y, &animalTab[m].isEnemy, &animalTab[m].isAlive, &animalTab[m].index);
+        fscanf(fichier, "type=%c: x=%i, y=%i, enemy=%d, alive=%d, eat=%d, index=%i, zone=%i", &animalTab[m].type, &animalTab[m].x, &animalTab[m].y, &animalTab[m].isEnemy, &animalTab[m].isAlive, &animalTab[m].canEat, &animalTab[m].index, &animalTab[m].zone);
         //on saute chaque ligne
         fseek(fichier, 1, SEEK_CUR);
     }
@@ -95,19 +108,21 @@ bool writeSave(Animal* animalT){
         return false;
     }
 
-int m;
-    fprintf(fichier, "%s\n", playerTab[0].nom);
-    fprintf(fichier, "%s\n", playerTab[1].nom);
+    int m;
+    fprintf(fichier, "Joueur 1: %s\n", playerTab[0].nom);
+    fprintf(fichier, "Joueur 2: %s\n", playerTab[1].nom);
     for (m = 0; m < animal_Count; m++) {
 
         //on sauvegarde les infos de nos animaux
-            fprintf(fichier, "%c: ", animalT[m].type);
-            fprintf(fichier, "%i, ", animalT[m].x);
-            fprintf(fichier, "%i, ", animalT[m].y);
-            fprintf(fichier, "%d, ", animalT[m].isEnemy);
-            //on saute une ligne à la fin pour passer à l'animal suivant
-            fprintf(fichier, "%d, ", animalT[m].isAlive);
-        fprintf(fichier, "%i\n", animalT[m].index);
+        fprintf(fichier, "type=%c: ", animalT[m].type);
+        fprintf(fichier, "x=%i, ", animalT[m].x);
+        fprintf(fichier, "y=%i, ", animalT[m].y);
+        fprintf(fichier, "enemy=%d, ", animalT[m].isEnemy);
+        fprintf(fichier, "alive=%d, ", animalT[m].isAlive);
+        fprintf(fichier, "eat=%d, ", animalT[m].canEat);
+        fprintf(fichier, "index=%i, ", animalT[m].index);
+        fprintf(fichier, "zone=%i\n", animalT[m].zone);
+        //on saute une ligne à la fin pour passer à l'animal suivant
     }
     fclose (fichier);
     return true;
@@ -203,6 +218,8 @@ void loadGame() {
                         animal.index = animalTab[nbb].index;
                         animal.x = animalTab[nbb].x;
                         animal.y = animalTab[nbb].y;
+                        animal.canEat = animalTab[nbb].canEat;
+                        animal.zone = animalTab[nbb].zone;
                     }
                 }
             } else {
@@ -217,119 +234,232 @@ void loadGame() {
                         animal.index = animalTab[nbb].index;
                         animal.x = animalTab[nbb].x;
                         animal.y = animalTab[nbb].y;
+                        animal.canEat = animalTab[nbb].canEat;
+                        animal.zone = animalTab[nbb].zone;
                     }
                 }
             }
 
-do{
-            printf("Choisissez votre direction: ");
-            scanf("%c", &direction);
+            do{
+                printf("Choisissez votre direction: ");
+                scanf("%c", &direction);
+            }
+            while (direction == 10);
+            viderBuffer();
+            int nb;
+
+            switch (direction) {
+
+                case 'A':
+                    //printf("Avancer\n");
+                    for (nb = 0; nb < animal_Count; nb++) {
+                        if (animalTab[nb].x == animal.x && animalTab[nb].y == animal.y &&
+                            animalTab[nb].isAlive == true) {
+                            if (animalTab[nb].isEnemy == true) {
+                                if(animalTab[nb].x-1 < 9 && animalTab[nb].x-1 > -1) {
+                                    if (searchCanEat(animal, 'A', true)) {
+                                        coord[animalTab[nb].x][animalTab[nb].y] = 0;
+                                        animalTab[nb].x = animal.x - 1;
+                                        animalTab[nb].zone = checkZone(animalTab[nb]);
+                                        if (animalTab[nb].zone == PIEGE_ROUGE) {
+                                            animalTab[nb].canEat = false;
+                                        }else if(animalTab[nb].zone == SANCTUAIRE_ROUGE){
+                                            printf("%s de l'equipe BLEUE a gagne(e) la partie!", playerTab[0].nom);
+                                            win = true;
+                                        }else if(animalTab[nb].zone == SANCTUAIRE_BLEU){
+                                            animalTab[nb].x = animal.x;
+                                        }
+                                    }else{
+                                        animalTab[nb].canEat = true;
+                                    }
+                                }
+                            } else {
+                                if(animalTab[nb].x+1 < 9 && animalTab[nb].x+1 > -1) {
+                                    if (searchCanEat(animal, 'A', false)) {
+                                        coord[animalTab[nb].x][animalTab[nb].y] = 0;
+                                        animalTab[nb].x = animal.x + 1;
+                                        animalTab[nb].zone = checkZone(animalTab[nb]);
+                                        if(animalTab[nb].zone == PIEGE_BLEU){
+                                            animalTab[nb].canEat = false;
+                                        }else if(animalTab[nb].zone == SANCTUAIRE_BLEU){
+                                            printf("%s de l'equipe ROUGE a gagne(e) la partie!", playerTab[1].nom);
+                                            win = true;
+                                        }else if(animalTab[nb].zone == SANCTUAIRE_ROUGE){
+                                            animalTab[nb].x = animal.x;
+                                        }
+                                    }else{
+                                        animalTab[nb].canEat = true;
+                                    }
+                                }
+
+                            }
+                        }
+                    }
+                    break;
+                case 'R':
+                    //printf("Reculer\n");
+                    for (nb = 0; nb < animal_Count; nb++) {
+                        if (animalTab[nb].x == animal.x && animalTab[nb].y == animal.y &&
+                            animalTab[nb].isAlive == true) {
+                            if (animalTab[nb].isEnemy == true) {
+                                if(animalTab[nb].x+1 < 9 && animalTab[nb].x+1 > -1) {
+                                    if (searchCanEat(animal, 'R', true)) {
+                                        coord[animalTab[nb].x][animalTab[nb].y] = 0;
+                                        animalTab[nb].x = animal.x + 1;
+                                        animalTab[nb].zone = checkZone(animalTab[nb]);
+                                        if(animalTab[nb].zone == PIEGE_ROUGE){
+                                            animalTab[nb].canEat = false;
+                                        }else if(animalTab[nb].zone == SANCTUAIRE_ROUGE){
+                                            printf("%s de l'equipe BLEUE a gagne(e) la partie!", playerTab[0].nom);
+                                            win = true;
+                                        }else if(animalTab[nb].zone == SANCTUAIRE_BLEU){
+                                            animalTab[nb].x = animal.x;
+                                        }
+                                    }else{
+                                        animalTab[nb].canEat = true;
+                                    }
+                                }
+                            } else {
+                                if(animalTab[nb].x-1 < 9 && animalTab[nb].x-1 > -1) {
+                                    if (searchCanEat(animal, 'R', false)) {
+                                        coord[animalTab[nb].x][animalTab[nb].y] = 0;
+                                        animalTab[nb].x = animal.x - 1;
+                                        animalTab[nb].zone = checkZone(animalTab[nb]);
+                                        if(animalTab[nb].zone == PIEGE_BLEU){
+                                            animalTab[nb].canEat = false;
+                                        }else if(animalTab[nb].zone == SANCTUAIRE_BLEU){
+                                            printf("%s de l'equipe ROUGE a gagne(e) la partie!", playerTab[1].nom);
+                                            win = true;
+                                        }else if(animalTab[nb].zone == SANCTUAIRE_ROUGE){
+                                            animalTab[nb].x = animal.x;
+                                        }
+                                    }else{
+                                        animalTab[nb].canEat = true;
+                                    }
+                                }
+                            }
+
+                        }
+                    }
+                    break;
+                case 'D':
+                    //printf("Droite\n");
+                    for (nb = 0; nb < animal_Count; nb++) {
+                        if (animalTab[nb].x == animal.x && animalTab[nb].y == animal.y &&
+                            animalTab[nb].isAlive == true) {
+                            if (animalTab[nb].isEnemy == true) {
+                                if(animalTab[nb].y+1 < 7 && animalTab[nb].y+1 > -1) {
+                                    if (searchCanEat(animal, 'D', true)) {
+                                        coord[animalTab[nb].x][animalTab[nb].y] = 0;
+                                        animalTab[nb].y = animal.y + 1;
+                                        animalTab[nb].zone = checkZone(animalTab[nb]);
+                                        if(animalTab[nb].zone == PIEGE_ROUGE){
+                                            animalTab[nb].canEat = false;
+                                        }else if(animalTab[nb].zone == SANCTUAIRE_ROUGE){
+                                            printf("%s de l'equipe BLEUE a gagne(e) la partie!", playerTab[0].nom);
+                                            win = true;
+                                        }else if(animalTab[nb].zone == SANCTUAIRE_BLEU){
+                                            animalTab[nb].y = animal.y;
+                                        }
+                                    }else{
+                                        animalTab[nb].canEat = true;
+                                    }
+                                }
+                            } else {
+                                if(animalTab[nb].y-1 < 7 && animalTab[nb].y-1 > -1) {
+                                    if (searchCanEat(animal, 'D', false)) {
+                                        coord[animalTab[nb].x][animalTab[nb].y] = 0;
+                                        animalTab[nb].y = animal.y - 1;
+                                        animalTab[nb].zone = checkZone(animalTab[nb]);
+                                        if(animalTab[nb].zone == PIEGE_BLEU){
+                                            animalTab[nb].canEat = false;
+                                        }else if(animalTab[nb].zone == SANCTUAIRE_BLEU){
+                                            printf("%s de l'equipe ROUGE a gagne(e) la partie!", playerTab[1].nom);
+                                            win = true;
+                                        }else if(animalTab[nb].zone == SANCTUAIRE_ROUGE){
+                                            animalTab[nb].y = animal.y;
+                                        }
+                                    }else{
+                                        animalTab[nb].canEat = true;
+                                    }
+                                }
+
+                            }
+                        }
+                    }
+                    break;
+                case 'G':
+                    //printf("Gauche\n");
+                    for (nb = 0; nb < animal_Count; nb++) {
+                        if (animalTab[nb].x == animal.x && animalTab[nb].y == animal.y &&
+                            animalTab[nb].isAlive == true) {
+                            if (animalTab[nb].isEnemy == true) {
+                                if(animalTab[nb].y-1 < 7 && animalTab[nb].y-1 > -1) {
+                                    if (searchCanEat(animal, 'G', true)) {
+                                        coord[animalTab[nb].x][animalTab[nb].y] = 0;
+                                        animalTab[nb].y = animal.y - 1;
+                                        animalTab[nb].zone = checkZone(animalTab[nb]);
+                                        if(animalTab[nb].zone == PIEGE_ROUGE){
+                                            animalTab[nb].canEat = false;
+                                        }else if(animalTab[nb].zone == SANCTUAIRE_ROUGE){
+                                            printf("%s de l'equipe BLEUE a gagne(e) la partie!", playerTab[0].nom);
+                                            win = true;
+                                        }else if(animalTab[nb].zone == SANCTUAIRE_BLEU){
+                                            animalTab[nb].y = animal.y;
+                                        }
+                                    }else{
+                                        animalTab[nb].canEat = true;
+                                    }
+                                }
+                            } else {
+                                if(animalTab[nb].y+1 < 7 && animalTab[nb].y+1 > -1) {
+                                    if (searchCanEat(animal, 'G', false)) {
+                                        coord[animalTab[nb].x][animalTab[nb].y] = 0;
+                                        animalTab[nb].y = animal.y + 1;
+                                        animalTab[nb].zone = checkZone(animalTab[nb]);
+                                        if(animalTab[nb].zone == PIEGE_BLEU){
+                                            animalTab[nb].canEat = false;
+                                        }else if(animalTab[nb].zone == SANCTUAIRE_BLEU){
+                                            printf("%s de l'equipe ROUGE a gagne(e) la partie!", playerTab[1].nom);
+                                            win = true;
+                                        }else if(animalTab[nb].zone == SANCTUAIRE_ROUGE){
+                                            animalTab[nb].y = animal.y;
+                                        }
+                                    }else{
+                                        animalTab[nb].canEat = true;
+                                    }
+                                }
+
+                            }
+                        }
+                    }
+
+                    break;
+
+                default:
+                    break;
+
+
+
+
+            }
+
+            if(!win) {
+                afficherEchiquier();
+            }else{
+                remove("save.txt");
+                getch();
+                return;
+            }
+
+
         }
-        while (direction == 10);
-        viderBuffer();
-        int nb;
+        printf("Voulez-vous continuer? (Oui: Entrer / Non: Echap)");
 
-        switch (direction) {
-
-            case 'A':
-                //printf("Avancer\n");
-                for (nb = 0; nb < animal_Count; nb++) {
-                    if (animalTab[nb].x == animal.x && animalTab[nb].y == animal.y &&
-                        animalTab[nb].isAlive == true) {
-                        if (animalTab[nb].isEnemy == true) {
-                            if (searchCanEat(animal, 'A', true)) {
-
-                                coord[animalTab[nb].x][animalTab[nb].y] = 0;
-                                animalTab[nb].x = animal.x - 1;
-                            }
-                        } else {
-                            if (searchCanEat(animal, 'A', false)) {
-                                coord[animalTab[nb].x][animalTab[nb].y] = 0;
-                                animalTab[nb].x = animal.x + 1;
-                            }
-
-                        }
-                    }
-                }
-                break;
-            case 'R':
-                //printf("Reculer\n");
-                for (nb = 0; nb < animal_Count; nb++) {
-                    if (animalTab[nb].x == animal.x && animalTab[nb].y == animal.y &&
-                        animalTab[nb].isAlive == true) {
-                        if (animalTab[nb].isEnemy == true) {
-                            if (searchCanEat(animal, 'R', true)) {
-                                coord[animalTab[nb].x][animalTab[nb].y] = 0;
-                                animalTab[nb].x = animal.x + 1;
-                            }
-                        } else {
-                            if (searchCanEat(animal, 'R', false)) {
-                                coord[animalTab[nb].x][animalTab[nb].y] = 0;
-                                animalTab[nb].x = animal.x - 1;
-                            }
-                        }
-
-                    }
-                }
-                break;
-            case 'D':
-                //printf("Droite\n");
-                for (nb = 0; nb < animal_Count; nb++) {
-                    if (animalTab[nb].x == animal.x && animalTab[nb].y == animal.y &&
-                        animalTab[nb].isAlive == true) {
-                        if (animalTab[nb].isEnemy == true) {
-                            if (searchCanEat(animal, 'D', true)) {
-                                coord[animalTab[nb].x][animalTab[nb].y] = 0;
-                                animalTab[nb].y = animal.y + 1;
-                            }
-                        } else {
-                            if (searchCanEat(animal, 'D', false)) {
-                                coord[animalTab[nb].x][animalTab[nb].y] = 0;
-                                animalTab[nb].y = animal.y - 1;
-                            }
-
-                        }
-                    }
-                }
-                break;
-            case 'G':
-                //printf("Gauche\n");
-                for (nb = 0; nb < animal_Count; nb++) {
-                    if (animalTab[nb].x == animal.x && animalTab[nb].y == animal.y &&
-                        animalTab[nb].isAlive == true) {
-                        if (animalTab[nb].isEnemy == true) {
-                            if (searchCanEat(animal, 'G', true)) {
-                                coord[animalTab[nb].x][animalTab[nb].y] = 0;
-                                animalTab[nb].y = animal.y - 1;
-                            }
-                        } else {
-                            if (searchCanEat(animal, 'G', false)) {
-                                coord[animalTab[nb].x][animalTab[nb].y] = 0;
-                                animalTab[nb].y = animal.y + 1;
-                            }
-
-                        }
-                    }
-                }
-                break;
-
-            default:
-                break;
-
-
-
-
-        }
-
-        afficherEchiquier();
-
-    }
-
-    printf("Voulez-vous continuer? (Oui: Entrer / Non: Echap)");
 #ifdef _WIN32
     }while(getch()!=27);
 #else
-}while(getc(stdin)!=27);
+    }while(getc(stdin)!=27);
 #endif
 
 
@@ -414,6 +544,49 @@ void setCoord(){
 
 }
 
+enum Zone checkZone(Animal animal){
+
+
+    int i, j;
+
+    for (i = 0; i < 9; i++) {
+        for (j = 0; j < 7; j++) {
+
+            if (animal.x == 3 && animal.y == 1 || animal.x == 3 && animal.y == 2 || animal.x == 4 && animal.y == 1 || animal.x == 4 && animal.y == 2 ||
+                animal.x == 5 && animal.y == 1 || animal.x == 5 && animal.y == 2 || animal.x == 3 && animal.y == 4 || animal.x == 3 && animal.y == 5 ||
+                animal.x == 4 && animal.y == 4 || animal.x == 4 && animal.y == 5 || animal.x == 5 && animal.y == 4 || animal.x == 5 && animal.y == 5) {
+                //zone lac
+                return LAC;
+            } else if (animal.x == 0 && animal.y == 2 || animal.x == 0 && animal.y == 3 || animal.x == 0 && animal.y == 4 || animal.x == 1 && animal.y == 3) {
+                if(animal.x == 0 && animal.y == 3){
+                    //zone sanctuaire rouge
+                    return SANCTUAIRE_ROUGE;
+                }else {
+                    //zone piege rouge
+                    return PIEGE_ROUGE;
+                }
+            } else if (animal.x == 8 && animal.y == 2 || animal.x == 8 && animal.y == 3 || animal.x == 8 && animal.y == 4 || animal.x == 7 && animal.y == 3) {
+                if(animal.x == 8 && animal.y == 3){
+                    //zone sanctuaire bleu
+                    return SANCTUAIRE_BLEU;
+                }else {
+                    //zone piege bleu
+                    return PIEGE_BLEU;
+                }
+            }else {
+                return AUCUNE;
+            }
+
+
+
+
+        }
+    }
+
+
+
+}
+
 void afficherEchiquier() {
 
     int i, j, m, b, x, y;
@@ -421,10 +594,10 @@ void afficherEchiquier() {
     //utiliser le meme prototype que ci-dessous pour les déplacement
     for (b = 0; b < animal_Count; b++) {
         if (animalTab[b].isAlive) {
-        x = animalTab[b].x;
-        y = animalTab[b].y;
-        coord[x][y] = animalTab[b].type;
-    }
+            x = animalTab[b].x;
+            y = animalTab[b].y;
+            coord[x][y] = animalTab[b].type;
+        }
     }
 #ifdef _WIN32
     system("cls");
@@ -481,15 +654,15 @@ void afficherEchiquier() {
                     if (animalTab[m].x == i && animalTab[m].y == j) {
                         //Enemy = Blue Team
                         if (animalTab[m].isAlive){
-                        if (animalTab[m].isEnemy) {
-                            color(1, 0);
-                            printf(" %c ", coord[i][j]);
-                            SetConsoleTextAttribute(hConsole, saved_attributes);
-                        } else {
-                            color(4, 0);
-                            printf(" %c ", coord[i][j]);
-                            SetConsoleTextAttribute(hConsole, saved_attributes);
-                        }
+                            if (animalTab[m].isEnemy) {
+                                color(1, 0);
+                                printf(" %c ", coord[i][j]);
+                                SetConsoleTextAttribute(hConsole, saved_attributes);
+                            } else {
+                                color(4, 0);
+                                printf(" %c ", coord[i][j]);
+                                SetConsoleTextAttribute(hConsole, saved_attributes);
+                            }
                         }
 
                     }
@@ -557,20 +730,22 @@ bool checkEat(Animal *enemy, Animal ally){
     if(enemy->isEnemy != ally.isEnemy) {
 
 
-            if (enemy->index > ally.index) {
-                enemy->isAlive = false;
-                coord[enemy->x][enemy->y] = 0;
-                return true;
+        if (enemy->index >= ally.index) {
 
-            } else if (enemy->type == 'E' && ally.type == 'R') {
+            enemy->isAlive = false;
+            coord[enemy->x][enemy->y] = 0;
+            return true;
 
-                enemy->isAlive = false;
-                coord[enemy->x][enemy->y] = 0;
-                return true;
+        } else if (enemy->type == 'E' && ally.type == 'R') {
 
-            } else {
-                return false;
-            }
+            enemy->isAlive = false;
+            coord[enemy->x][enemy->y] = 0;
+            return true;
+
+        } else{
+
+            return false;
+        }
 
     }else{
         return false;
@@ -581,162 +756,195 @@ bool checkEat(Animal *enemy, Animal ally){
 bool searchCanEat(Animal animal, char direction, bool isEnemy){
 
     int b, u;
-        //refaire même système que le déplacement
-        switch(direction){
+    //refaire même système que le déplacement
+    switch(direction){
 
-            case 'A':
-                if(isEnemy){
-                    animal.x = animal.x - 1;
-                    for (b = 0; b < animal_Count; b++) {
-                        if(animalTab[b].x == animal.x && animalTab[b].y == animal.y && animalTab[b].isAlive){
-                            if(!animalTab[b].isEnemy) {
+        case 'A':
+            if(isEnemy){
+                animal.x = animal.x - 1;
+                for (b = 0; b < animal_Count; b++) {
+                    if(animalTab[b].x == animal.x && animalTab[b].y == animal.y && animalTab[b].isAlive){
+                        if(animal.canEat) {
+                            if (!animalTab[b].isEnemy) {
                                 if (checkEat(&animalTab[b], animal)) {
                                     return true;
 
                                 } else {
                                     return false;
                                 }
-                            }else{
+                            } else {
                                 return false;
                             }
-                        }
-                    }
-                }else{
-                    animal.x = animal.x + 1;
-                    for (b = 0; b < animal_Count; b++) {
-                        if(animalTab[b].x == animal.x && animalTab[b].y == animal.y && animalTab[b].isAlive){
-                            if(!animalTab[b].isEnemy) {
-                                if (checkEat(&animalTab[b], animal)) {
-                                    return true;
-
-                                } else {
-                                    return false;
-                                }
-                            }else{
-                                return false;
-                            }
+                        }else{
+                            return false;
                         }
                     }
                 }
-                break;
-
-            case 'R':
-                if(isEnemy){
-                    animal.x = animal.x + 1;
-                    for (b = 0; b < animal_Count; b++) {
-                        if(animalTab[b].x == animal.x && animalTab[b].y == animal.y && animalTab[b].isAlive){
-                            if(!animalTab[b].isEnemy) {
+            }else{
+                animal.x = animal.x + 1;
+                for (b = 0; b < animal_Count; b++) {
+                    if(animalTab[b].x == animal.x && animalTab[b].y == animal.y && animalTab[b].isAlive){
+                        if(animal.canEat) {
+                            if (animalTab[b].isEnemy) {
                                 if (checkEat(&animalTab[b], animal)) {
                                     return true;
 
                                 } else {
                                     return false;
                                 }
-                            }else{
+                            } else {
                                 return false;
                             }
-                        }
-                    }
-                }else{
-                    animal.x = animal.x - 1;
-                    for (b = 0; b < animal_Count; b++) {
-                        if(animalTab[b].x == animal.x && animalTab[b].y == animal.y && animalTab[b].isAlive){
-                            if(!animalTab[b].isEnemy) {
-                                if (checkEat(&animalTab[b], animal)) {
-                                    return true;
-
-                                } else {
-                                    return false;
-                                }
-                            }else{
-                                return false;
-                            }
+                        }else{
+                            return false;
                         }
                     }
                 }
-                break;
+            }
+            break;
 
-            case 'D':
-                if(isEnemy){
-                    animal.y = animal.y + 1;
-                    for (b = 0; b < animal_Count; b++) {
-                        if(animalTab[b].x == animal.x && animalTab[b].y == animal.y && animalTab[b].isAlive){
-                            if(!animalTab[b].isEnemy) {
+        case 'R':
+            if(isEnemy){
+                animal.x = animal.x + 1;
+                for (b = 0; b < animal_Count; b++) {
+                    if (animalTab[b].x == animal.x && animalTab[b].y == animal.y && animalTab[b].isAlive) {
+                        if(animal.canEat) {
+                            if (!animalTab[b].isEnemy) {
                                 if (checkEat(&animalTab[b], animal)) {
                                     return true;
 
                                 } else {
                                     return false;
                                 }
-                            }else{
+                            } else {
                                 return false;
                             }
-                        }
-                    }
-                }else{
-                    animal.y = animal.y - 1;
-                    for (b = 0; b < animal_Count; b++) {
-                        if(animalTab[b].x == animal.x && animalTab[b].y == animal.y && animalTab[b].isAlive){
-                            if(!animalTab[b].isEnemy) {
-                                if (checkEat(&animalTab[b], animal)) {
-                                    return true;
-
-                                } else {
-                                    return false;
-                                }
-                            }else{
-                                return false;
-                            }
+                        }else{
+                            return false;
                         }
                     }
                 }
-                break;
-
-            case 'G':
-                if(isEnemy){
-                    animal.y = animal.y - 1;
-                    for (b = 0; b < animal_Count; b++) {
-                        if(animalTab[b].x == animal.x && animalTab[b].y == animal.y && animalTab[b].isAlive){
-                            if(!animalTab[b].isEnemy) {
+            }else{
+                animal.x = animal.x - 1;
+                for (b = 0; b < animal_Count; b++) {
+                    if(animalTab[b].x == animal.x && animalTab[b].y == animal.y && animalTab[b].isAlive){
+                        if(animal.canEat) {
+                            if (animalTab[b].isEnemy) {
                                 if (checkEat(&animalTab[b], animal)) {
                                     return true;
 
                                 } else {
                                     return false;
                                 }
-                            }else{
+                            } else {
                                 return false;
                             }
-                        }
-                    }
-                }else{
-                    animal.y = animal.y + 1;
-                    for (b = 0; b < animal_Count; b++) {
-                        if(animalTab[b].x == animal.x && animalTab[b].y == animal.y && animalTab[b].isAlive){
-                            if(!animalTab[b].isEnemy) {
-                                if (checkEat(&animalTab[b], animal)) {
-                                    return true;
-
-                                } else {
-                                    return false;
-                                }
-                            }else{
-                                return false;
-                            }
+                        }else{
+                            return false;
                         }
                     }
                 }
-                break;
+            }
+            break;
 
-            default:
-                break;
+        case 'D':
+            if(isEnemy){
+                animal.y = animal.y + 1;
+                for (b = 0; b < animal_Count; b++) {
+                    if(animalTab[b].x == animal.x && animalTab[b].y == animal.y && animalTab[b].isAlive){
+                        if(animal.canEat) {
+                            if (!animalTab[b].isEnemy) {
+                                if (checkEat(&animalTab[b], animal)) {
+                                    return true;
 
-        }
+                                } else {
+                                    return false;
+                                }
+                            } else {
+                                return false;
+                            }
+                        }else{
+                            return false;
+                        }
+                    }
+                }
+            }else{
+                animal.y = animal.y - 1;
+                for (b = 0; b < animal_Count; b++) {
+                    if(animalTab[b].x == animal.x && animalTab[b].y == animal.y && animalTab[b].isAlive){
+                        if(animal.canEat) {
+                            if (animalTab[b].isEnemy) {
+                                if (checkEat(&animalTab[b], animal)) {
+                                    return true;
+
+                                } else {
+                                    return false;
+                                }
+                            } else {
+                                return false;
+                            }
+                        }else{
+                            return false;
+                        }
+                    }
+                }
+            }
+            break;
+
+        case 'G':
+            if(isEnemy){
+                animal.y = animal.y - 1;
+                for (b = 0; b < animal_Count; b++) {
+                    if(animalTab[b].x == animal.x && animalTab[b].y == animal.y && animalTab[b].isAlive){
+                        if(animal.canEat) {
+                            if (!animalTab[b].isEnemy) {
+                                if (checkEat(&animalTab[b], animal)) {
+                                    return true;
+
+                                } else {
+                                    return false;
+                                }
+                            } else {
+                                return false;
+                            }
+                        }else{
+                            return false;
+                        }
+                    }
+                }
+            }else{
+                animal.y = animal.y + 1;
+                for (b = 0; b < animal_Count; b++) {
+                    if(animalTab[b].x == animal.x && animalTab[b].y == animal.y && animalTab[b].isAlive){
+                        if(animal.canEat) {
+                            if (animalTab[b].isEnemy) {
+                                if (checkEat(&animalTab[b], animal)) {
+                                    return true;
+
+                                } else {
+                                    return false;
+                                }
+                            } else {
+                                return false;
+                            }
+                        }else{
+                            return false;
+                        }
+                    }
+                }
+            }
+            break;
+
+        default:
+            break;
+
+    }
 
 
 }
 
 void GenererEchequier() {
+
     setlocale(LC_ALL, "fr_FR.UTF-8");
 
     Animal animal;
@@ -754,33 +962,39 @@ void GenererEchequier() {
     animalType[6] = CHAT;
     animalType[7] = RAT;
 
-   if (!readSave()) {
+    if (!readSave()) {
 
-       playerTab = NULL;
-       for (l = 0; l < 16; l++) {//1er joueur
+        playerTab = NULL;
+        for (l = 0; l < 16; l++) {//1er joueur
 
-           if (l < 8) {
-               animal.isEnemy = false;
-               animal.isAlive = true;
-               animal.index = l;
-               animal.type = animalType[l];
-               animalTab[l] = animal;
-           } else {
+            if (l < 8) {
+                animal.isEnemy = false;
+                animal.isAlive = true;
+                animal.index = l;
+                animal.type = animalType[l];
+                animal.zone = AUCUNE;
+                animal.canEat = true;
+                animalTab[l] = animal;
+            } else {
 
-               //second joueur
-               animal.isEnemy = true;
-               animal.isAlive = true;
-               animal.index = l-8;
-               animal.type = animalType[l - 8];
-               animalTab[l] = animal;
-           }
-       }
+                //second joueur
+                animal.isEnemy = true;
+                animal.isAlive = true;
+                animal.index = l-8;
+                animal.type = animalType[l - 8];
+                animal.zone = AUCUNE;
+                animal.canEat = true;
+                animalTab[l] = animal;
+            }
+        }
         setCoord();
 
-   }
+    }
 
     afficherEchiquier();
     loadGame();
-    writeSave(animalTab);
+    if(!win) {
+        writeSave(animalTab);
+    }
 
 }
