@@ -254,7 +254,7 @@ void loadGame() {
                     //printf("Avancer\n");
                     for (nb = 0; nb < animal_Count; nb++) {
                         if (animalTab[nb].x == animal.x && animalTab[nb].y == animal.y &&
-                            animalTab[nb].isAlive == true) {
+                            animalTab[nb].isAlive == true && animalTab[nb].type == type) {
                             if (animalTab[nb].isEnemy == true) {
                                 if(animalTab[nb].x-1 < 9 && animalTab[nb].x-1 > -1) {
                                     animal.x = animal.x - 1;
@@ -304,7 +304,7 @@ void loadGame() {
                     //printf("Reculer\n");
                     for (nb = 0; nb < animal_Count; nb++) {
                         if (animalTab[nb].x == animal.x && animalTab[nb].y == animal.y &&
-                            animalTab[nb].isAlive == true) {
+                            animalTab[nb].isAlive == true && animalTab[nb].type == type) {
                             if (animalTab[nb].isEnemy == true) {
                                 if(animalTab[nb].x+1 < 9 && animalTab[nb].x+1 > -1) {
                                     animal.x = animal.x + 1;
@@ -354,7 +354,7 @@ void loadGame() {
                     //printf("Droite\n");
                     for (nb = 0; nb < animal_Count; nb++) {
                         if (animalTab[nb].x == animal.x && animalTab[nb].y == animal.y &&
-                            animalTab[nb].isAlive == true) {
+                            animalTab[nb].isAlive == true && animalTab[nb].type == type) {
                             if (animalTab[nb].isEnemy == true) {
                                 if(animalTab[nb].y+1 < 7 && animalTab[nb].y+1 > -1) {
                                     animal.y = animal.y + 1;
@@ -404,7 +404,7 @@ void loadGame() {
                     //printf("Gauche\n");
                     for (nb = 0; nb < animal_Count; nb++) {
                         if (animalTab[nb].x == animal.x && animalTab[nb].y == animal.y &&
-                            animalTab[nb].isAlive == true) {
+                            animalTab[nb].isAlive == true && animalTab[nb].type == type) {
                             if (animalTab[nb].isEnemy == true) {
                                 if(animalTab[nb].y-1 < 7 && animalTab[nb].y-1 > -1) {
                                     animal.y = animal.y - 1;
