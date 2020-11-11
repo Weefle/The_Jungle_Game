@@ -587,14 +587,14 @@ bool hasRat(Animal animal, char direction){
                              case 'A':
                                  l = animal.y;
                                  if(!animal.isEnemy) {
-                                     for (k = animal.x; k < animal.x + 3; k++) {
+                                     for (k = animal.x; k < animal.x + 4; k++) {
                                          if (animalTab[m].x == k && animalTab[m].y == l) {
                                              return true;
 
                                          }
                                      }
                                  }else{
-                                     for (k = animal.x; k > animal.x-3; k--) {
+                                     for (k = animal.x; k > animal.x-4; k--) {
                                          if (animalTab[m].x == k && animalTab[m].y == l) {
                                              return true;
 
@@ -604,14 +604,14 @@ bool hasRat(Animal animal, char direction){
                              case 'R':
                                  l = animal.y;
                                  if(!animal.isEnemy) {
-                                     for (k = animal.x; k > animal.x - 3; k--) {
+                                     for (k = animal.x; k > animal.x - 4; k--) {
                                          if (animalTab[m].x == k && animalTab[m].y == l) {
                                              return true;
 
                                          }
                                      }
                                  }else{
-                                     for (k = animal.x; k < animal.x + 3; k++) {
+                                     for (k = animal.x; k < animal.x + 4; k++) {
                                          if (animalTab[m].x == k && animalTab[m].y == l) {
                                              return true;
 
