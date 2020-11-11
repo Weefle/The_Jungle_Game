@@ -272,8 +272,6 @@ void loadGame() {
                                             animalTab[nb].zone = checkZone(animalTab[nb]);
                                         }
                                     }else{
-                                        coord[animalTab[nb].x][animalTab[nb].y] = animalTab[nb].type;
-                                        animalTab[nb].x = animal.x+1;
                                         animalTab[nb].canEat = true;
                                     }
                                 }
@@ -294,8 +292,6 @@ void loadGame() {
                                             animalTab[nb].zone = checkZone(animalTab[nb]);
                                         }
                                     }else{
-                                        coord[animalTab[nb].x][animalTab[nb].y] = animalTab[nb].type;
-                                        animalTab[nb].x = animal.x-1;
                                         animalTab[nb].canEat = true;
                                     }
                                 }
@@ -326,8 +322,6 @@ void loadGame() {
                                             animalTab[nb].zone = checkZone(animalTab[nb]);
                                         }
                                     }else{
-                                        coord[animalTab[nb].x][animalTab[nb].y] = animalTab[nb].type;
-                                        animalTab[nb].x = animal.x-1;
                                         animalTab[nb].canEat = true;
                                     }
                                 }
@@ -348,8 +342,6 @@ void loadGame() {
                                             animalTab[nb].zone = checkZone(animalTab[nb]);
                                         }
                                     }else{
-                                        coord[animalTab[nb].x][animalTab[nb].y] = animalTab[nb].type;
-                                        animalTab[nb].x = animal.x+1;
                                         animalTab[nb].canEat = true;
                                     }
                                 }
@@ -380,8 +372,6 @@ void loadGame() {
                                             animalTab[nb].zone = checkZone(animalTab[nb]);
                                         }
                                     }else{
-                                        coord[animalTab[nb].x][animalTab[nb].y] = animalTab[nb].type;
-                                        animalTab[nb].y = animal.y-1;
                                         animalTab[nb].canEat = true;
                                     }
                                 }
@@ -402,8 +392,6 @@ void loadGame() {
                                             animalTab[nb].zone = checkZone(animalTab[nb]);
                                         }
                                     }else{
-                                        coord[animalTab[nb].x][animalTab[nb].y] = animalTab[nb].type;
-                                        animalTab[nb].y = animal.y+1;
                                         animalTab[nb].canEat = true;
                                     }
                                 }
@@ -434,8 +422,6 @@ void loadGame() {
                                             animalTab[nb].zone = checkZone(animalTab[nb]);
                                         }
                                     }else{
-                                        coord[animalTab[nb].x][animalTab[nb].y] = animalTab[nb].type;
-                                        animalTab[nb].y = animal.y+1;
                                         animalTab[nb].canEat = true;
                                     }
                                 }
@@ -456,8 +442,6 @@ void loadGame() {
                                             animalTab[nb].zone = checkZone(animalTab[nb]);
                                         }
                                     }else{
-                                        coord[animalTab[nb].x][animalTab[nb].y] = animalTab[nb].type;
-                                        animalTab[nb].y = animal.y-1;
                                         animalTab[nb].canEat = true;
                                     }
                                 }
