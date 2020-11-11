@@ -257,7 +257,14 @@ void loadGame() {
                             animalTab[nb].isAlive == true && animalTab[nb].type == type) {
                             if (animalTab[nb].isEnemy == true) {
                                 if(animalTab[nb].x-1 < 9 && animalTab[nb].x-1 > -1) {
-                                    animal.x = animal.x - 1;
+                                    if(animalTab[nb].type == 'L' || animalTab[nb].type == 'T'){
+                                        animal.x = animal.x - 1;
+                                        if(checkZone(animal) == LAC && !hasRat(animalTab[nb], 'A')) {
+                                            animal.x = animal.x - 3;
+                                        }
+                                    }else {
+                                        animal.x = animal.x - 1;
+                                    }
                                     if (searchCanEat(animal, true)) {
                                         coord[animalTab[nb].x][animalTab[nb].y] = 0;
                                         animalTab[nb].x = animal.x;
@@ -277,7 +284,14 @@ void loadGame() {
                                 }
                             } else {
                                 if(animalTab[nb].x+1 < 9 && animalTab[nb].x+1 > -1) {
-                                    animal.x = animal.x + 1;
+                                    if(animalTab[nb].type == 'L' || animalTab[nb].type == 'T'){
+                                        animal.x = animal.x + 1;
+                                        if(checkZone(animal) == LAC && !hasRat(animalTab[nb], 'A')) {
+                                            animal.x = animal.x + 3;
+                                        }
+                                    }else {
+                                        animal.x = animal.x + 1;
+                                    }
                                     if (searchCanEat(animal, false)) {
                                         coord[animalTab[nb].x][animalTab[nb].y] = 0;
                                         animalTab[nb].x = animal.x;
@@ -307,7 +321,14 @@ void loadGame() {
                             animalTab[nb].isAlive == true && animalTab[nb].type == type) {
                             if (animalTab[nb].isEnemy == true) {
                                 if(animalTab[nb].x+1 < 9 && animalTab[nb].x+1 > -1) {
-                                    animal.x = animal.x + 1;
+                                    if(animalTab[nb].type == 'L' || animalTab[nb].type == 'T'){
+                                        animal.x = animal.x + 1;
+                                        if(checkZone(animal) == LAC && !hasRat(animalTab[nb], 'R')) {
+                                            animal.x = animal.x + 3;
+                                        }
+                                    }else {
+                                        animal.x = animal.x + 1;
+                                    }
                                     if (searchCanEat(animal, true)) {
                                         coord[animalTab[nb].x][animalTab[nb].y] = 0;
                                         animalTab[nb].x = animal.x;
@@ -327,7 +348,14 @@ void loadGame() {
                                 }
                             } else {
                                 if(animalTab[nb].x-1 < 9 && animalTab[nb].x-1 > -1) {
-                                    animal.x = animal.x - 1;
+                                    if(animalTab[nb].type == 'L' || animalTab[nb].type == 'T'){
+                                        animal.x = animal.x - 1;
+                                        if(checkZone(animal) == LAC && !hasRat(animalTab[nb], 'R')) {
+                                            animal.x = animal.x - 3;
+                                        }
+                                    }else {
+                                        animal.x = animal.x - 1;
+                                    }
                                     if (searchCanEat(animal, false)) {
                                         coord[animalTab[nb].x][animalTab[nb].y] = 0;
                                         animalTab[nb].x = animal.x;
@@ -357,7 +385,14 @@ void loadGame() {
                             animalTab[nb].isAlive == true && animalTab[nb].type == type) {
                             if (animalTab[nb].isEnemy == true) {
                                 if(animalTab[nb].y+1 < 7 && animalTab[nb].y+1 > -1) {
-                                    animal.y = animal.y + 1;
+                                    if(animalTab[nb].type == 'L' || animalTab[nb].type == 'T'){
+                                        animal.y = animal.y + 1;
+                                        if(checkZone(animal) == LAC && !hasRat(animalTab[nb], 'D')) {
+                                            animal.y = animal.y + 2;
+                                        }
+                                    }else {
+                                        animal.y = animal.y + 1;
+                                    }
                                     if (searchCanEat(animal, true)) {
                                         coord[animalTab[nb].x][animalTab[nb].y] = 0;
                                         animalTab[nb].y = animal.y;
@@ -377,7 +412,14 @@ void loadGame() {
                                 }
                             } else {
                                 if(animalTab[nb].y-1 < 7 && animalTab[nb].y-1 > -1) {
-                                    animal.y = animal.y - 1;
+                                    if(animalTab[nb].type == 'L' || animalTab[nb].type == 'T'){
+                                        animal.y = animal.y - 1;
+                                        if(checkZone(animal) == LAC && !hasRat(animalTab[nb], 'D')) {
+                                            animal.y = animal.y - 2;
+                                        }
+                                    }else {
+                                        animal.y = animal.y - 1;
+                                    }
                                     if (searchCanEat(animal, false)) {
                                         coord[animalTab[nb].x][animalTab[nb].y] = 0;
                                         animalTab[nb].y = animal.y;
@@ -407,7 +449,14 @@ void loadGame() {
                             animalTab[nb].isAlive == true && animalTab[nb].type == type) {
                             if (animalTab[nb].isEnemy == true) {
                                 if(animalTab[nb].y-1 < 7 && animalTab[nb].y-1 > -1) {
-                                    animal.y = animal.y - 1;
+                                    if(animalTab[nb].type == 'L' || animalTab[nb].type == 'T'){
+                                        animal.y = animal.y - 1;
+                                        if(checkZone(animal) == LAC && !hasRat(animalTab[nb], 'G')) {
+                                            animal.y = animal.y - 2;
+                                        }
+                                    }else {
+                                        animal.y = animal.y - 1;
+                                    }
                                     if (searchCanEat(animal, true)) {
                                         coord[animalTab[nb].x][animalTab[nb].y] = 0;
                                         animalTab[nb].y = animal.y;
@@ -427,7 +476,14 @@ void loadGame() {
                                 }
                             } else {
                                 if(animalTab[nb].y+1 < 7 && animalTab[nb].y+1 > -1) {
-                                    animal.y = animal.y + 1;
+                                    if(animalTab[nb].type == 'L' || animalTab[nb].type == 'T'){
+                                        animal.y = animal.y + 1;
+                                        if(checkZone(animal) == LAC && !hasRat(animalTab[nb], 'G')) {
+                                            animal.y = animal.y + 2;
+                                        }
+                                    }else {
+                                        animal.y = animal.y + 1;
+                                    }
                                     if (searchCanEat(animal, false)) {
                                         coord[animalTab[nb].x][animalTab[nb].y] = 0;
                                         animalTab[nb].y = animal.y;
@@ -480,6 +536,99 @@ void loadGame() {
 
 
 
+}
+
+bool hasRat(Animal animal, char direction){
+
+    int m, i, j, k, l;
+    for (i = 0; i < 9; i++) {
+        for (j = 0; j < 7; j++) {
+            if (coord[i][j] != 0) {
+                for (m = 0; m < animal_Count; m++) {
+                    if (animalTab[m].x == i && animalTab[m].y == j) {
+
+                        if (animalTab[m].type == 'R' && animalTab[m].isAlive && animalTab[m].zone == LAC) {
+                         switch(direction) {
+
+                             case 'D':
+                             k = animal.x;
+                             if(!animal.isEnemy) {
+                                 for (l = animal.y; l > animal.y - 3; l--) {
+                                     if (animalTab[m].x == k && animalTab[m].y == l) {
+                                         return true;
+
+                                     }
+                                 }
+                             }else{
+                                 for (l = animal.y; l < animal.y+3; l++) {
+                                     if (animalTab[m].x == k && animalTab[m].y == l) {
+                                         return true;
+
+                                     }
+                                 }
+                             }
+                             case 'G':
+                                 k = animal.x;
+                                 if(!animal.isEnemy) {
+                                     for (l = animal.y; l < animal.y + 3; l++) {
+                                         if (animalTab[m].x == k && animalTab[m].y == l) {
+                                             return true;
+
+                                         }
+                                     }
+                                 }else{
+                                     for (l = animal.y; l > animal.y - 3; l--) {
+                                         if (animalTab[m].x == k && animalTab[m].y == l) {
+                                             return true;
+
+                                         }
+                                     }
+                                 }
+                             case 'A':
+                                 l = animal.y;
+                                 if(!animal.isEnemy) {
+                                     for (k = animal.x; k < animal.x + 3; k++) {
+                                         if (animalTab[m].x == k && animalTab[m].y == l) {
+                                             return true;
+
+                                         }
+                                     }
+                                 }else{
+                                     for (k = animal.x; k > animal.x-3; k--) {
+                                         if (animalTab[m].x == k && animalTab[m].y == l) {
+                                             return true;
+
+                                         }
+                                     }
+                                 }
+                             case 'R':
+                                 l = animal.y;
+                                 if(!animal.isEnemy) {
+                                     for (k = animal.x; k > animal.x - 3; k--) {
+                                         if (animalTab[m].x == k && animalTab[m].y == l) {
+                                             return true;
+
+                                         }
+                                     }
+                                 }else{
+                                     for (k = animal.x; k < animal.x + 3; k++) {
+                                         if (animalTab[m].x == k && animalTab[m].y == l) {
+                                             return true;
+
+                                         }
+                                     }
+                                 }
+
+
+
+                         }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return false;
 }
 
 void setCoord(){

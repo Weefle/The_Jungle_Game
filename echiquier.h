@@ -14,6 +14,7 @@ char* animalType;
 void afficherEchiquier();
 void color(int t, int f);
 bool searchCanEat(struct Animal animal, bool isEnemy);
+bool hasRat(struct Animal, char direction);
 bool checkEat(struct Animal *enemy, struct Animal ally);
 void GenererEchequier();
 enum Zone checkZone(struct Animal animal);
