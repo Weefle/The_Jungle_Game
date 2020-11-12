@@ -86,9 +86,17 @@ bool readSave(){
     }
     int m;
     playerTab = malloc(2 * sizeof(Player));//nos types d'animaux
-    fscanf(fichier, "Joueur 1: %s", playerTab[0].nom);
+    fscanf(fichier, "Joueur 1: name=%s", playerTab[0].nom);
     fseek(fichier, 1, SEEK_CUR);
-    fscanf(fichier, "Joueur 2: %s", playerTab[1].nom);
+    fscanf(fichier, "enemy=%i", &playerTab[0].isEnemy);
+    fseek(fichier, 1, SEEK_CUR);
+    fscanf(fichier, "score=%i", &playerTab[0].score);
+    fseek(fichier, 1, SEEK_CUR);
+    fscanf(fichier, "Joueur 2: name=%s", playerTab[1].nom);
+    fseek(fichier, 1, SEEK_CUR);
+    fscanf(fichier, "enemy=%i", &playerTab[1].isEnemy);
+    fseek(fichier, 1, SEEK_CUR);
+    fscanf(fichier, "score=%i", &playerTab[1].score);
     fseek(fichier, 1, SEEK_CUR);
     for (m = 0; m < animal_Count; m++) {
         //on récupère les infos des animaux
@@ -109,8 +117,12 @@ bool writeSave(Animal* animalT){
     }
 
     int m;
-    fprintf(fichier, "Joueur 1: %s\n", playerTab[0].nom);
-    fprintf(fichier, "Joueur 2: %s\n", playerTab[1].nom);
+    fprintf(fichier, "Joueur 1: name=%s\n", playerTab[0].nom);
+    fprintf(fichier, "enemy=%i\n", playerTab[0].isEnemy);
+    fprintf(fichier, "score=%i\n", playerTab[0].score);
+    fprintf(fichier, "Joueur 2: name=%s\n", playerTab[1].nom);
+    fprintf(fichier, "enemy=%i\n", playerTab[1].isEnemy);
+    fprintf(fichier, "score=%i\n", playerTab[1].score);
     for (m = 0; m < animal_Count; m++) {
 
         //on sauvegarde les infos de nos animaux
@@ -176,7 +188,6 @@ void loadGame() {
     Animal animal;
     char type;
     char direction;
-    bool turn = false;
 
     while (playerTab == NULL) {
 
@@ -184,9 +195,13 @@ void loadGame() {
 
         printf("Entrez le nom du premier joueur:\n");
         lire(playerTab[0].nom, 150);
+        playerTab[0].score = 0;
+        playerTab[0].isEnemy = true;
         printf("Nom du premier joueur: %s\n", playerTab[0].nom);
         printf("Entrez le nom du second joueur:\n");
         lire(playerTab[1].nom, 150);
+        playerTab[1].score = 0;
+        playerTab[1].isEnemy = false;
         printf("Nom du second joueur: %s\n", playerTab[1].nom);
 
 
@@ -195,10 +210,14 @@ void loadGame() {
 
     do {
 
-        for (int i = 0; i < player_Count; ++i) {
+        for (int turn = 0; turn < player_Count; ++turn) {
 
-            player = playerTab[i];
-            printf("\nC'est au tour de: %s\n", player.nom);
+            for(int q = 0; q<150;q++) {
+                player.nom[q] = playerTab[turn].nom[q];
+            }
+            player.isEnemy = playerTab[turn].isEnemy;
+
+            printf("\nC'est au tour de %s avec un score de %i:\n", player.nom, playerTab[turn].score);
 
             do {
                 printf("Choisissez votre pion: ");
@@ -206,8 +225,7 @@ void loadGame() {
             } while (type == 10);
             viderBuffer();
 
-            if (turn == false) {
-                turn = true;
+            if (player.isEnemy) {
                 int nbb;
                 animal.type = type;
                 animal.isEnemy = true;
@@ -223,7 +241,6 @@ void loadGame() {
                     }
                 }
             } else {
-                turn = false;
                 int nbb;
                 animal.type = type;
                 animal.isEnemy = false;
@@ -265,13 +282,13 @@ void loadGame() {
                                     }else {
                                         animal.x = animal.x - 1;
                                     }
-                                    if (searchCanEat(animal, true)) {
+                                    if (searchCanEat(animal, true, &playerTab[turn])) {
                                         coord[animalTab[nb].x][animalTab[nb].y] = 0;
                                         animalTab[nb].x = animal.x;
                                         if (checkZone(animalTab[nb]) == PIEGE_ROUGE) {
                                             animalTab[nb].canEat = false;
                                         }else if(checkZone(animalTab[nb]) == SANCTUAIRE_ROUGE){
-                                            printf("%s de l'equipe BLEUE a gagne(e) la partie!", playerTab[0].nom);
+                                            printf("%s de l'equipe BLEUE a gagne(e) la partie avec %i point(s)!", player.nom, playerTab[turn].score);
                                             win = true;
                                         }else if(checkZone(animalTab[nb]) == SANCTUAIRE_BLEU || animal.type != 'R' && checkZone(animalTab[nb]) == LAC){
                                             animalTab[nb].x = animal.x+1;
@@ -292,13 +309,13 @@ void loadGame() {
                                     }else {
                                         animal.x = animal.x + 1;
                                     }
-                                    if (searchCanEat(animal, false)) {
+                                    if (searchCanEat(animal, false, &playerTab[turn])) {
                                         coord[animalTab[nb].x][animalTab[nb].y] = 0;
                                         animalTab[nb].x = animal.x;
                                         if(checkZone(animalTab[nb]) == PIEGE_BLEU){
                                             animalTab[nb].canEat = false;
                                         }else if(checkZone(animalTab[nb]) == SANCTUAIRE_BLEU){
-                                            printf("%s de l'equipe ROUGE a gagne(e) la partie!", playerTab[1].nom);
+                                            printf("%s de l'equipe ROUGE a gagne(e) la partie avec %i point(s)!", player.nom, playerTab[turn].score);
                                             win = true;
                                         }else if(checkZone(animalTab[nb]) == SANCTUAIRE_ROUGE || animal.type != 'R' && checkZone(animalTab[nb]) == LAC){
                                             animalTab[nb].x = animal.x-1;
@@ -329,13 +346,13 @@ void loadGame() {
                                     }else {
                                         animal.x = animal.x + 1;
                                     }
-                                    if (searchCanEat(animal, true)) {
+                                    if (searchCanEat(animal, true, &playerTab[turn])) {
                                         coord[animalTab[nb].x][animalTab[nb].y] = 0;
                                         animalTab[nb].x = animal.x;
                                         if(checkZone(animalTab[nb]) == PIEGE_ROUGE){
                                             animalTab[nb].canEat = false;
                                         }else if(checkZone(animalTab[nb]) == SANCTUAIRE_ROUGE){
-                                            printf("%s de l'equipe BLEUE a gagne(e) la partie!", playerTab[0].nom);
+                                            printf("%s de l'equipe BLEUE a gagne(e) la partie avec %i point(s)!", player.nom, playerTab[turn].score);
                                             win = true;
                                         }else if(checkZone(animalTab[nb]) == SANCTUAIRE_BLEU || animal.type != 'R' && checkZone(animalTab[nb]) == LAC){
                                             animalTab[nb].x = animal.x-1;
@@ -356,13 +373,13 @@ void loadGame() {
                                     }else {
                                         animal.x = animal.x - 1;
                                     }
-                                    if (searchCanEat(animal, false)) {
+                                    if (searchCanEat(animal, false, &playerTab[turn])) {
                                         coord[animalTab[nb].x][animalTab[nb].y] = 0;
                                         animalTab[nb].x = animal.x;
                                         if(checkZone(animalTab[nb]) == PIEGE_BLEU){
                                             animalTab[nb].canEat = false;
                                         }else if(checkZone(animalTab[nb]) == SANCTUAIRE_BLEU){
-                                            printf("%s de l'equipe ROUGE a gagne(e) la partie!", playerTab[1].nom);
+                                            printf("%s de l'equipe ROUGE a gagne(e) la partie avec %i point(s)!", player.nom, playerTab[turn].score);
                                             win = true;
                                         }else if(checkZone(animalTab[nb]) == SANCTUAIRE_ROUGE || animal.type != 'R' && checkZone(animalTab[nb]) == LAC){
                                             animalTab[nb].x = animal.x+1;
@@ -393,13 +410,13 @@ void loadGame() {
                                     }else {
                                         animal.y = animal.y + 1;
                                     }
-                                    if (searchCanEat(animal, true)) {
+                                    if (searchCanEat(animal, true, &playerTab[turn])) {
                                         coord[animalTab[nb].x][animalTab[nb].y] = 0;
                                         animalTab[nb].y = animal.y;
                                         if(checkZone(animalTab[nb]) == PIEGE_ROUGE){
                                             animalTab[nb].canEat = false;
                                         }else if(checkZone(animalTab[nb]) == SANCTUAIRE_ROUGE){
-                                            printf("%s de l'equipe BLEUE a gagne(e) la partie!", playerTab[0].nom);
+                                            printf("%s de l'equipe BLEUE a gagne(e) la partie avec %i point(s)!", player.nom, playerTab[turn].score);
                                             win = true;
                                         }else if(checkZone(animalTab[nb]) == SANCTUAIRE_BLEU || animal.type != 'R' && checkZone(animalTab[nb]) == LAC){
                                             animalTab[nb].y = animal.y-1;
@@ -420,13 +437,13 @@ void loadGame() {
                                     }else {
                                         animal.y = animal.y - 1;
                                     }
-                                    if (searchCanEat(animal, false)) {
+                                    if (searchCanEat(animal, false, &playerTab[turn])) {
                                         coord[animalTab[nb].x][animalTab[nb].y] = 0;
                                         animalTab[nb].y = animal.y;
                                         if(checkZone(animalTab[nb]) == PIEGE_BLEU){
                                             animalTab[nb].canEat = false;
                                         }else if(checkZone(animalTab[nb]) == SANCTUAIRE_BLEU){
-                                            printf("%s de l'equipe ROUGE a gagne(e) la partie!", playerTab[1].nom);
+                                            printf("%s de l'equipe ROUGE a gagne(e) la partie avec %i point(s)!", player.nom, playerTab[turn].score);
                                             win = true;
                                         }else if(checkZone(animalTab[nb]) == SANCTUAIRE_ROUGE || animal.type != 'R' && checkZone(animalTab[nb]) == LAC){
                                             animalTab[nb].y = animal.y+1;
@@ -457,13 +474,13 @@ void loadGame() {
                                     }else {
                                         animal.y = animal.y - 1;
                                     }
-                                    if (searchCanEat(animal, true)) {
+                                    if (searchCanEat(animal, true, &playerTab[turn])) {
                                         coord[animalTab[nb].x][animalTab[nb].y] = 0;
                                         animalTab[nb].y = animal.y;
                                         if(checkZone(animalTab[nb]) == PIEGE_ROUGE){
                                             animalTab[nb].canEat = false;
                                         }else if(checkZone(animalTab[nb]) == SANCTUAIRE_ROUGE){
-                                            printf("%s de l'equipe BLEUE a gagne(e) la partie!", playerTab[0].nom);
+                                            printf("%s de l'equipe BLEUE a gagne(e) la partie avec %i point(s)!", player.nom, playerTab[turn].score);
                                             win = true;
                                         }else if(checkZone(animalTab[nb]) == SANCTUAIRE_BLEU || animal.type != 'R' && checkZone(animalTab[nb]) == LAC){
                                             animalTab[nb].y = animal.y+1;
@@ -484,13 +501,13 @@ void loadGame() {
                                     }else {
                                         animal.y = animal.y + 1;
                                     }
-                                    if (searchCanEat(animal, false)) {
+                                    if (searchCanEat(animal, false, &playerTab[turn])) {
                                         coord[animalTab[nb].x][animalTab[nb].y] = 0;
                                         animalTab[nb].y = animal.y;
                                         if(checkZone(animalTab[nb]) == PIEGE_BLEU){
                                             animalTab[nb].canEat = false;
                                         }else if(checkZone(animalTab[nb]) == SANCTUAIRE_BLEU){
-                                            printf("%s de l'equipe ROUGE a gagne(e) la partie!", playerTab[1].nom);
+                                            printf("%s de l'equipe ROUGE a gagne(e) la partie avec %i point(s)!", player.nom, playerTab[turn].score);
                                             win = true;
                                         }else if(checkZone(animalTab[nb]) == SANCTUAIRE_ROUGE || animal.type != 'R' && checkZone(animalTab[nb]) == LAC){
                                             animalTab[nb].y = animal.y-1;
@@ -890,7 +907,7 @@ void afficherEchiquier() {
     printf("\r \n");
 }
 
-bool checkEat(Animal *enemy, Animal ally){
+bool checkEat(Animal *enemy, Animal ally, Player* playerTab){
 
     if(enemy->isEnemy != ally.isEnemy) {
 
@@ -899,12 +916,14 @@ bool checkEat(Animal *enemy, Animal ally){
 
             enemy->isAlive = false;
             coord[enemy->x][enemy->y] = 0;
+            playerTab->score++;
             return true;
 
         } else if (enemy->type == 'E' && ally.type == 'R' && ally.zone != LAC) {
 
             enemy->isAlive = false;
             coord[enemy->x][enemy->y] = 0;
+            playerTab->score++;
             return true;
 
         } else{
@@ -918,7 +937,7 @@ bool checkEat(Animal *enemy, Animal ally){
 
 }
 
-bool searchCanEat(Animal animal, bool isEnemy){
+bool searchCanEat(Animal animal, bool isEnemy, Player* playerTab){
 
     int b;
 
@@ -927,7 +946,7 @@ bool searchCanEat(Animal animal, bool isEnemy){
                     if(animalTab[b].x == animal.x && animalTab[b].y == animal.y && animalTab[b].isAlive) {
                         if (animal.canEat) {
                             if (!animalTab[b].isEnemy) {
-                                if (checkEat(&animalTab[b], animal)) {
+                                if (checkEat(&animalTab[b], animal, playerTab)) {
                                     return true;
 
                                 } else {
@@ -947,7 +966,7 @@ bool searchCanEat(Animal animal, bool isEnemy){
                     if (animalTab[b].x == animal.x && animalTab[b].y == animal.y && animalTab[b].isAlive) {
                         if (animal.canEat) {
                             if (animalTab[b].isEnemy) {
-                                if (checkEat(&animalTab[b], animal)) {
+                                if (checkEat(&animalTab[b], animal, playerTab)) {
                                     return true;
 
                                 } else {
